@@ -118,7 +118,7 @@ struct DevBuildCommand: AsyncParsableCommand {
 
     @Flag(
         help: "Output a .ipa file instead of a .app"
-    ) var ipa = false
+    ) var ipa = true
 
     @Option(
         help: ArgumentHelp(
