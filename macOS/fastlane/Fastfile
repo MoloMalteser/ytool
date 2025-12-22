@@ -8,9 +8,9 @@ lane :package do
   xcodegen
 
   # Config is controlled via env vars
-  app_store_connect_api_key(
-    is_key_content_base64: true,
-  )
+  # app_store_connect_api_key(
+  #  is_key_content_base64: true,
+  # )
 
   create_keychain(
     name: "xtool.keychain",
