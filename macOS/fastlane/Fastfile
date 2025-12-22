@@ -8,7 +8,7 @@ platform :mac do
 
     # Wir sind bereits in macOS/
     xcodegen(
-      spec: "XToolMac.yml",
+      spec: "project.yml",
       project: "XToolMac.xcodeproj"
     )
 
