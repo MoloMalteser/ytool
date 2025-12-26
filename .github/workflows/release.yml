@@ -1,9 +1,14 @@
+name: Build and Release XTool
+
 on:
   push:
     tags:
       - "*"
 
 jobs:
+  # ------------------------------
+  # Linux Build
+  # ------------------------------
   build-linux:
     strategy:
       fail-fast: false
@@ -19,18 +24,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Build
+
+      - name: Build Linux package
         run: |
           docker compose run --build \
             -e XTOOL_VERSION=${{ github.ref_name }} \
             --rm xtool Linux/build.sh
-      - name: Upload artifact
+
+      - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: xtool-${{ matrix.host.arch }}
           path: |
             Linux/packages/xtool-${{ matrix.host.arch }}.AppImage
             Linux/packages/xtool-${{ matrix.host.arch }}.AppImage.zsync
+
+  # ------------------------------
+  # macOS Build
+  # ------------------------------
   build-mac:
     runs-on: macos-26
     permissions:
@@ -38,12 +49,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           working-directory: macOS
+          ruby-version: 3.4
           bundler-cache: true
-      - name: Build
+
+      - name: Install Homebrew dependencies
+        run: |
+          brew update
+          brew install xcodegen
+
+      - name: Build macOS package
         env:
           APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
@@ -54,13 +73,18 @@ jobs:
         run: |
           cd macOS
           bundle exec fastlane package
-      - name: Upload artifacts
+
+      - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
         with:
           name: xtool-mac
           path: |
             macOS/Build/Output/xtool.app.zip
             macOS/Build/Output/xtool.app.dSYM.zip
+
+  # ------------------------------
+  # Release
+  # ------------------------------
   release:
     needs: [build-linux, build-mac]
     runs-on: ubuntu-24.04
@@ -69,12 +93,15 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Download artifact
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: xtool-*
           path: output
+
       - name: Create and publish release
         run: |
           TAG="${{ github.ref_name }}"
