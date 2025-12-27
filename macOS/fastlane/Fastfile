@@ -12,7 +12,7 @@ platform :mac do
     # ✅ Direktes CLI, vollständig kompatibel mit macOS
     sh(
       "xcodegen",
-      "--spec", "project.yml"
+      "--spec", "/Users/runner/work/ytool/ytool/macOS/project.yml"
     )
 
     create_keychain(
