@@ -5,7 +5,7 @@ options:
 
 packages:
   xtool:
-    path: Packages/xtool
+    path: Ressources/xtool
 
 fileGroups:
   - Support
